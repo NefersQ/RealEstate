@@ -1,4 +1,4 @@
-package demo.RealEstate.pswrdhashing;
+package demo.RealEstate.config;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 

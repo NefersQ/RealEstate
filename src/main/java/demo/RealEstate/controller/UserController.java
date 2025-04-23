@@ -1,91 +1,75 @@
 package demo.RealEstate.controller;
 
-
 import demo.RealEstate.dto.UserDTO;
-import demo.RealEstate.exception.UserAlreadyExistsException;
 import demo.RealEstate.model.UserDAO;
+import demo.RealEstate.jwt.JwtUtil;
 import demo.RealEstate.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 @RestController
+@RequestMapping("/api/v1/users")
 public class UserController {
+
   @Autowired
   private UserService userService;
 
-  @GetMapping("/api/v1/users/{id}")
-  public ResponseEntity<UserDTO> findUserById(@PathVariable("id") Long id) {
+  @Autowired
+  private JwtUtil jwtUtil;
+  // returns information about current user
+  @GetMapping("/me")
+  public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+    String token = authHeader.replace("Bearer ", "");
+    Long userId = jwtUtil.getUserIdFromToken(token);
+    UserDTO dto = userService.findUserById(userId);
+    return ResponseEntity.ok(dto);
+  }
+  //updates current user information
+  @PutMapping("/me")
+  public ResponseEntity<UserDTO> updateCurrentUser(@RequestHeader("Authorization") String authHeader,
+                                                   @Valid @RequestBody UserDAO user) {
+    String token = authHeader.replace("Bearer ", "");
+    Long userId = jwtUtil.getUserIdFromToken(token);
+    userService.updateUserById(userId, user);
+    UserDTO updated = userService.findUserById(userId);
+    return ResponseEntity.ok(updated);
+  }
+  //for admin: returns information about certain user by his id
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping("/{id}")
+  public ResponseEntity<UserDTO> findUserById(@PathVariable Long id) {
     UserDTO userDTO = userService.findUserById(id);
     return ResponseEntity.ok(userDTO);
   }
 
-  @PutMapping("/api/v1/users/{id}")
-  public ResponseEntity<Object> updateUserById(@PathVariable("id") Long id, @Valid @RequestBody UserDAO user) {
-    try {
-      userService.updateUserById(id, user);
-      return new ResponseEntity<>((Object) user, HttpStatus.OK);
-    } catch (UserAlreadyExistsException e) {
-      return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-    }
-    catch (Exception e) {
-      return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+  //for admin: update user by id
+  @PreAuthorize("hasRole('ADMIN')")
+  @PutMapping("/{id}")
+  public ResponseEntity<UserDTO> updateUserById(@PathVariable Long id, @Valid @RequestBody UserDAO user) {
+    userService.updateUserById(id, user);
+    UserDTO updated = userService.findUserById(id);
+    return ResponseEntity.ok(updated);
   }
-
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-    Map<String, String> errors = new HashMap<>();
-    ex.getBindingResult().getAllErrors().forEach((error) -> {
-      String fieldName = ((FieldError) error).getField();
-      String errorMessage = error.getDefaultMessage();
-      errors.put(fieldName, errorMessage);
-    });
-    return errors;
-  }
-
-  @DeleteMapping("/api/v1/users/{id}")
-  public ResponseEntity<HttpStatus> deleteUserById(@PathVariable("id") Long id) {
+  // for admin: delete user by ID
+  @PreAuthorize("hasRole('ADMIN')")
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteUserById(@PathVariable Long id) {
     userService.deleteUserById(id);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    return ResponseEntity.noContent().build();
   }
-
-  @GetMapping("/api/v1/users")
-  public ResponseEntity<Object> getAllUsers() {
+  //for admin: get all existing users
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping
+  public ResponseEntity<List<UserDTO>> getAllUsers() {
     List<UserDTO> users = userService.getAllUsers();
     if (users.isEmpty()) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-    return new ResponseEntity<>((Object) users, HttpStatus.OK);
-  }
-
-  @PutMapping("/api/v1/users/deactivate/{id}")
-  public ResponseEntity<UserDTO> deactivateUserById(@PathVariable("id") Long id) {
-    try {
-      UserDAO deactivatedUser = userService.deactivateUser(id);
-      UserDTO deactivatedUserDTO = UserDTO.mapUserDAOToDTO(deactivatedUser);
-      return ResponseEntity.ok(deactivatedUserDTO);
-    } catch (NoSuchElementException e) {
-      return ResponseEntity.notFound().build();
-    }
-  }
-
-  @GetMapping("/api/v1/users/getAllActiveUsers")
-  public ResponseEntity<List<UserDTO> > getAllActiveUsers() {
-    List<UserDTO> activeUsers = userService.getAllActiveUsers();
-    if (activeUsers.isEmpty()) {
       return ResponseEntity.noContent().build();
     }
-    return ResponseEntity.ok(activeUsers);
+    return ResponseEntity.ok(users);
   }
 }

@@ -1,4 +1,4 @@
-package request;
+package demo.RealEstate.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

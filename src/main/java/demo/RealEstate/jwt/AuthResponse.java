@@ -1,4 +1,4 @@
-package demo.RealEstate.pswrdhashing;
+package demo.RealEstate.jwt;
 
 import demo.RealEstate.dto.UserDTO;
 import lombok.Getter;

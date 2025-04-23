@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Property Listings - RealEstateVR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/common.css" rel="stylesheet">
+    <link href="/css/index.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="card p-3 shadow-sm mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Filters</h5>
+                    <button id="resetFilters" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">District</label>
+                    <select id="districtFilter" class="form-select">
+                        <option value="">All Districts</option>
+                        <option value="CENTER">Center</option>
+                        <option value="NORTH">North</option>
+                        <option value="SOUTH">South</option>
+                        <option value="EAST">East</option>
+                        <option value="WEST">West</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Property Type</label>
+                    <select id="typeFilter" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="HOUSE">House</option>
+                        <option value="APARTMENT">Apartment</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Construction Type</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="BRICK" id="constructionBrick">
+                        <label class="form-check-label" for="constructionBrick">Brick</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="PANEL" id="constructionPanel">
+                        <label class="form-check-label" for="constructionPanel">Panel</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="MONOLITH" id="constructionMonolith">
+                        <label class="form-check-label" for="constructionMonolith">Monolith</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-flex justify-content-between">
+                        <span>Price (€)</span>
+                        <span class="text-muted small">Range</span>
+                    </label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-light">From</span>
+                        <input type="number" id="priceMin" class="form-control" placeholder="Min">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">To</span>
+                        <input type="number" id="priceMax" class="form-control" placeholder="Max">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-flex justify-content-between">
+                        <span>Price per m² (€)</span>
+                        <span class="text-muted small">Range</span>
+                    </label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-light">From</span>
+                        <input type="number" id="pricePerSqmMin" class="form-control" placeholder="Min">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">To</span>
+                        <input type="number" id="pricePerSqmMax" class="form-control" placeholder="Max">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label d-flex justify-content-between">
+                        <span>Area (m²)</span>
+                        <span class="text-muted small">Range</span>
+                    </label>
+                    <div class="input-group mb-2">
+                        <span class="input-group-text bg-light">From</span>
+                        <input type="number" id="areaMin" class="form-control" placeholder="Min">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">To</span>
+                        <input type="number" id="areaMax" class="form-control" placeholder="Max">
+                    </div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="has3DModel">
+                    <label class="form-check-label" for="has3DModel">
+                        <i class="bi bi-badge-3d me-1"></i> Only with 3D Model
+                    </label>
+                </div>
+
+                <div class="mb-0">
+                    <label class="form-label">Sort by</label>
+                    <select id="sortFilter" class="form-select">
+                        <option value="priceAsc">Price (Low to High)</option>
+                        <option value="priceDesc">Price (High to Low)</option>
+                        <option value="areaAsc">Area (Small to Large)</option>
+                        <option value="areaDesc">Area (Large to Small)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="card p-3 shadow-sm">
+                <h5 class="mb-3">Need Help?</h5>
+                <p class="small mb-3">Our real estate experts are ready to assist you in finding your perfect property.</p>
+                <a href="#" class="btn btn-primary mb-2">
+                    <i class="bi bi-chat-dots me-2"></i> Contact Agent
+                </a>
+                <a href="#" class="btn btn-outline-primary">
+                    <i class="bi bi-telephone me-2"></i> Schedule Call
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="row" id="propertyGrid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/components.js"></script>
+<script src="/js/properties.js"></script>
+</body>
+</html>

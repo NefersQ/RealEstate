@@ -23,10 +23,10 @@ public class UserDAO {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
     @NotBlank(message = "Name is required")
-    @Size(min = 2, max = 20, message = "Name must be between 2 and 50 characters")
+    @Size(min = 2, max = 20, message = "Name must be between 2 and 20 characters")
     private String name;
     @NotBlank(message = "Surname is required")
-    @Size(min = 2, max = 20, message = "Surname must be between 2 and 50 characters")
+    @Size(min = 2, max = 20, message = "Surname must be between 2 and 20 characters")
     private String surname;
     @NotBlank(message = "Username is required")
     @Size(min = 4, max = 20, message = "Username must be between 4 and 20 characters")
@@ -38,6 +38,5 @@ public class UserDAO {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
-    private Boolean isActive = true;
     private LocalDateTime userCreated = LocalDateTime.now();
 }

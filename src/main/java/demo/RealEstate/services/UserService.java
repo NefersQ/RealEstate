@@ -1,109 +1,80 @@
 package demo.RealEstate.services;
 
 import demo.RealEstate.dto.UserDTO;
-import demo.RealEstate.exception.UserAlreadyExistsException;
+import demo.RealEstate.exception.ApiException;
+import demo.RealEstate.mapper.UserMapper;
 import demo.RealEstate.model.UserDAO;
-import demo.RealEstate.pswrdhashing.PasswordEncoderUtil;
-import demo.RealEstate.repository.UserRep;
+import demo.RealEstate.config.PasswordEncoderUtil;
+import demo.RealEstate.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService {
     @Autowired
-    private UserRep userRepository;
+    private UserRepository userRepository;
 
+    @Autowired
+    private UserMapper userMapper;
+    //delete user by id
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
     }
-
+    //updates user by id
     public UserDAO updateUserById(Long id, UserDAO user) {
-        try {
-            Optional<UserDAO> userDAO = userRepository.findById(id);
-            if (userDAO.isEmpty()) {
-                throw new NoSuchElementException("User not found with id: " + id);
-            }
-            Optional<UserDAO> existingUserByUsername = userRepository.findByUsername(user.getUsername());
-            Optional<UserDAO> existingUserByEmail = userRepository.findByEmail(user.getEmail());
-            boolean usernameIsChanged = !userDAO.get().getUsername().equals(user.getUsername());
-            boolean emailIsChanged = !userDAO.get().getEmail().equals(user.getEmail());
-            if(
-               usernameIsChanged && existingUserByUsername.isPresent() ||
-               emailIsChanged && existingUserByEmail.isPresent()
-            ) {
-                throw new UserAlreadyExistsException("Username or email already exists");
-            }
-            user.setPassword(PasswordEncoderUtil.encodePassword(user.getPassword()));
-            return userRepository.save(user);
-        } catch (UserAlreadyExistsException e) {
-            throw new UserAlreadyExistsException(e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+        Optional<UserDAO> optionalExisting = userRepository.findById(id);
+        if (optionalExisting.isEmpty()) {
+            throw new ApiException("User not found with id: " + id, HttpStatus.NOT_FOUND);
         }
-    }
+        UserDAO existing = optionalExisting.get();
 
+        if (!existing.getUsername().equals(user.getUsername())) {
+            if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+                throw new ApiException("Username already exists", HttpStatus.CONFLICT);
+            }
+            existing.setUsername(user.getUsername());
+        }
+
+        if (!existing.getEmail().equals(user.getEmail())) {
+            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+                throw new ApiException("Email already exists", HttpStatus.CONFLICT);
+            }
+            existing.setEmail(user.getEmail());
+        }
+
+        existing.setName(user.getName());
+        existing.setSurname(user.getSurname());
+
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            existing.setPassword(PasswordEncoderUtil.encodePassword(user.getPassword()));
+        }
+
+        return userRepository.save(existing);
+    }
+    //returns all users
     public List<UserDTO> getAllUsers() {
-        List<UserDAO> userDAOList = userRepository.findAll();
-        List<UserDTO> userDTOList = new ArrayList<>();
-        for (UserDAO userDAO : userDAOList) {
-            userDTOList.add(UserDTO.mapUserDAOToDTO(userDAO));
-        }
-        return userDTOList;
+        List<UserDAO> users = userRepository.findAll();
+        return userMapper.toDTOList(users);
     }
-
+    //returns user by id
     public UserDTO findUserById(Long id) {
-        Optional<UserDAO> userDAO = userRepository.findById(id);
-        if (userDAO.isPresent()) {
-            return UserDTO.mapUserDAOToDTO(userDAO.get());
-        }
-        throw new NoSuchElementException("User not found with id: " + id);
+        UserDAO user = userRepository.findById(id)
+                .orElseThrow(() -> new ApiException("User not found with id: " + id, HttpStatus.NOT_FOUND));
+        return userMapper.toDTO(user);
     }
-
+    //used for login
     public Optional<UserDAO> findByUsernameOrEmail(String username, String email) {
-        Optional<UserDAO> userByUsername = userRepository.findByUsername(username);
-        if (userByUsername.isPresent()) {
-            return userByUsername;
-        }
-        return userRepository.findByEmail(email);
+        return userRepository.findByUsernameOrEmail(username, email);
     }
-
+    //registers users in the system
     public void registerUser(UserDAO userDAO) {
-        try {
-            userDAO.setPassword(PasswordEncoderUtil.encodePassword(userDAO.getPassword()));
-            Optional<UserDAO> existingUser = userRepository.findByUsernameOrEmail(userDAO.getUsername(), userDAO.getEmail());
-            if (existingUser.isPresent()) {
-                throw new UserAlreadyExistsException("Username or email already exists");
-            }
-            userRepository.save(userDAO);
-        } catch (UserAlreadyExistsException e) {
-            throw new UserAlreadyExistsException(e.getMessage());
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
+        userDAO.setPassword(PasswordEncoderUtil.encodePassword(userDAO.getPassword()));
+        if (userRepository.findByUsernameOrEmail(userDAO.getUsername(), userDAO.getEmail()).isPresent()) {
+            throw new ApiException("Username or email already exists", HttpStatus.CONFLICT);
         }
-    }
-
-    public UserDAO deactivateUser(Long userId) {
-        Optional<UserDAO> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            UserDAO user = userOptional.get();
-            user.setIsActive(false);
-            return userRepository.save(user);
-        } else {
-            throw new NoSuchElementException("User not found with id: " + userId);
-        }
-    }
-
-    public List<UserDTO> getAllActiveUsers() {
-        List<UserDAO> activeUsersDAO = userRepository.findActiveUsers();
-        List<UserDTO> activeUsersDTO = new ArrayList<>();
-        for (UserDAO userDAO : activeUsersDAO) {
-            activeUsersDTO.add(UserDTO.mapUserDAOToDTO(userDAO));
-        }
-        return activeUsersDTO;
+        userRepository.save(userDAO);
     }
 }

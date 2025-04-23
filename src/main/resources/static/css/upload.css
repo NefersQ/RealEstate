@@ -1,0 +1,38 @@
+input[type="file"] {
+    padding: 0.5rem;
+    line-height: 1.5;
+}
+
+input[type="file"]::file-selector-button {
+    margin-right: 1rem;
+    border: 0;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: #e9ecef;
+}
+
+#preview {
+    min-height: 0;
+    transition: all 0.3s ease;
+}
+
+#preview.d-none {
+    min-height: 0;
+}
+
+#preview:not(.d-none) {
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: var(--border-radius);
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}

@@ -1,0 +1,40 @@
+.feature-pill {
+    display: inline-block;
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.empty-state p {
+    color: var(--light-text);
+    font-size: 1.1rem;
+    margin-top: 1rem;
+}
+
+.properties-header {
+    margin-bottom: 1.5rem;
+}
+
+#propertyGrid .property-card {
+    margin-bottom: 1.5rem;
+}
+
+.model-badge {
+    display: inline-block;
+    background-color: rgba(72, 149, 239, 0.1);
+    color: var(--accent-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
