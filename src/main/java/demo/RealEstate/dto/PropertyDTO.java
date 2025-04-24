@@ -4,6 +4,8 @@ import demo.RealEstate.model.PropertyDAO;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class PropertyDTO {
@@ -13,6 +15,7 @@ public class PropertyDTO {
     private String address;
     private Double price;
     private String modelFileUrl;
+    private List<String> imageFileUrls;
 
     public static PropertyDTO from(PropertyDAO property) {
         PropertyDTO dto = new PropertyDTO();
@@ -21,7 +24,19 @@ public class PropertyDTO {
         dto.setDescription(property.getDescription());
         dto.setAddress(property.getAddress());
         dto.setPrice(property.getPrice());
-        dto.setModelFileUrl("/models/" + property.getModelFileName());
+
+        if (property.getModelFileName() != null) {
+            dto.setModelFileUrl("/models/" + property.getModelFileName());
+        }
+
+        if (property.getImageFileNames() != null) {
+            dto.setImageFileUrls(
+                    property.getImageFileNames().stream()
+                            .map(fileName -> "/images/" + fileName)
+                            .toList()
+            );
+        }
+
         return dto;
     }
 }

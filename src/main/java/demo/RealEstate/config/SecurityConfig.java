@@ -24,8 +24,18 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/api/v1/login", "/api/v1/register", "/api/v1/token/validate/**").permitAll()
+                .authorizeHttpRequests((authz) -> authz
+                        .requestMatchers(HttpMethod.POST, "/api/v1/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/login").permitAll()
+                        .requestMatchers("/api/v1/properties").permitAll()
+
+                        .requestMatchers(
+                                "/index.html", "/",
+                                "/login.html", "/register.html",
+                                "/upload.html", "/view.html",
+                                "/js/**", "/models/**"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);

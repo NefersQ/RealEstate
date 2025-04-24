@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>3D Property View</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+</head>
+<body>
+<h2 id="title">Loading...</h2>
+<a-scene>
+    <a-assets>
+        <a-asset-item id="model"></a-asset-item>
+    </a-assets>
+
+    <a-entity gltf-model="#model" position="0 0 0" scale="0.5 0.5 0.5" animation-mixer></a-entity>
+
+    <a-entity light="type: directional; color: #FFF; intensity: 1" position="2 4 -3"></a-entity>
+    <a-entity light="type: ambient; color: #CCC"></a-entity>
+
+    <a-camera wasd-controls look-controls position="0 1.6 0"></a-camera>
+</a-scene>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+
+    fetch('/api/v1/properties/' + id)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('title').innerText = data.title;
+            document.getElementById('model').setAttribute('src', data.modelFileUrl);
+        });
+</script>
+</body>
+</html>

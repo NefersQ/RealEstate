@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+<h2>Register</h2>
+<form id="registerForm">
+    <input type="text" name="name" placeholder="Name" required><br>
+    <input type="text" name="surname" placeholder="Surname" required><br>
+    <input type="text" name="username" placeholder="Username" required><br>
+    <input type="email" name="email" placeholder="Email" required><br>
+    <input type="password" name="password" placeholder="Password" required><br>
+    <button type="submit">Register</button>
+</form>
+<div id="message"></div>
+<a href="/login.html">Login</a>
+
+<script>
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = {
+            name: form.name.value,
+            surname: form.surname.value,
+            username: form.username.value,
+            email: form.email.value,
+            password: form.password.value
+        };
+
+        fetch("/api/v1/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Registration failed");
+                return res.text();
+            })
+            .then(text => {
+                document.getElementById("message").innerText = text + ". You can now login.";
+            })
+            .catch(err => {
+                document.getElementById("message").innerText = err.message;
+            });
+    });
+</script>
+</body>
+</html>

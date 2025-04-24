@@ -1,5 +1,6 @@
 package demo.RealEstate.controller;
 
+import demo.RealEstate.pswrdhashing.JwtUtil;
 import demo.RealEstate.dto.PropertyDTO;
 import demo.RealEstate.model.PropertyDAO;
 import demo.RealEstate.services.PropertyService;
@@ -13,6 +14,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/properties")
 public class PropertyController {
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Autowired
     private PropertyService propertyService;
@@ -39,5 +42,30 @@ public class PropertyController {
     @GetMapping("/{id}")
     public PropertyDTO getById(@PathVariable Long id) {
         return propertyService.getPropertyById(id);
+    }
+
+    @PostMapping(value = "/upload-direct", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> createPropertyDirect(
+            @RequestParam String title,
+            @RequestParam String description,
+            @RequestParam String address,
+            @RequestParam Double price,
+            @RequestParam(required = false) MultipartFile file,
+            @RequestParam(required = false) List<MultipartFile> images,
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        try {
+            Long userId = jwtUtil.getUserIdFromToken(authHeader.replace("Bearer ", ""));
+            PropertyDAO property = new PropertyDAO();
+            property.setTitle(title);
+            property.setDescription(description);
+            property.setAddress(address);
+            property.setPrice(price);
+
+            propertyService.savePropertyWithImages(property, file, images, userId);
+            return ResponseEntity.ok("Uploaded!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
 }

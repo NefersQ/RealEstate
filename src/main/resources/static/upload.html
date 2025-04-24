@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Property</title>
+    <script src="/js/auth.js"></script>
+</head>
+<body>
+<h2>Add New Property</h2>
+
+<form id="uploadForm">
+    <input type="text" name="title" placeholder="Title" required><br><br>
+    <textarea name="description" placeholder="Description" required></textarea><br><br>
+    <input type="text" name="address" placeholder="Address" required><br><br>
+    <input type="number" name="price" placeholder="Price" step="0.01" required><br><br>
+
+    <label>Upload 3D Model (.glb) (optional):</label><br>
+    <input type="file" name="file" accept=".glb"><br><br>
+
+    <label>Upload Images (optional):</label><br>
+    <input type="file" name="images" multiple accept="image/png, image/jpeg"><br><br>
+
+    <button type="submit">Upload</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+    document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const form = e.target;
+
+        const formData = new FormData();
+        formData.append("title", form.title.value);
+        formData.append("description", form.description.value);
+        formData.append("address", form.address.value);
+        formData.append("price", form.price.value);
+
+        if (form.file.files.length > 0) {
+            formData.append("file", form.file.files[0]);
+        }
+
+        for (const image of form.images.files) {
+            formData.append("images", image);
+        }
+
+        const token = getToken();
+
+        const response = await fetch("/api/v1/properties/upload-direct", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + token
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            document.getElementById("result").innerText = "Upload successful!";
+            window.location.href = "/index.html";
+        } else {
+            const err = await response.text();
+            document.getElementById("result").innerText = "Error: " + err;
+        }
+    });
+</script>
+</body>
+</html>

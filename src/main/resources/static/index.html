@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Property Listings</title>
+    <script src="/js/auth.js"></script>
+</head>
+<body>
+<nav>
+    <a href="/index.html">Home</a> |
+    <span id="nav-auth"></span>
+</nav>
+
+<h2>Available Properties</h2>
+<ul id="propertyList"></ul>
+
+<script>
+    const navAuth = document.getElementById("nav-auth");
+
+    if (isLoggedIn()) {
+        navAuth.innerHTML = `
+        <a href="/upload.html">Upload</a> |
+        <a href="#" onclick="logout()">Logout</a>
+    `;
+    } else {
+        navAuth.innerHTML = `
+        <a href="/login.html">Login</a> |
+        <a href="/register.html">Register</a>
+    `;
+    }
+
+    fetch('/api/v1/properties')
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to load properties: " + response.status);
+            return response.json();
+        })
+        .then(data => {
+            const list = document.getElementById('propertyList');
+            if (data.length === 0) {
+                list.innerHTML = "<li>No properties found</li>";
+                return;
+            }
+
+            data.forEach(property => {
+                const li = document.createElement('li');
+                const images = Array.isArray(property.imageFileUrls)
+                    ? property.imageFileUrls.map(url => `<img src="${url}" width="100">`).join(' ')
+                    : '';
+                const modelLink = property.modelFileUrl
+                    ? `<a href="/view.html?id=${property.id}">View in 3D</a>`
+                    : '';
+                li.innerHTML = `
+                <strong>${property.title}</strong> — ${property.price}€
+                <br>${images}<br>${modelLink}
+            `;
+                list.appendChild(li);
+            });
+        })
+        .catch(error => {
+            document.getElementById('propertyList').innerText = error.message;
+            console.error(error);
+        });
+</script>
+</body>
+</html>
