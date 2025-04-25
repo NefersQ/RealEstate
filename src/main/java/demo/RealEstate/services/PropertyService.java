@@ -6,6 +6,7 @@ import demo.RealEstate.model.UserDAO;
 import demo.RealEstate.repository.PropertyRepository;
 import demo.RealEstate.repository.UserRep;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,8 +24,11 @@ public class PropertyService {
     @Autowired
     private UserRep userRep;
 
-    private final String modelDir = "src/main/resources/static/models/";
-    private final String imageDir = "src/main/resources/static/images/";
+    @Value("${upload.models.path}")
+    private String modelDir;
+
+    @Value("${upload.images.path}")
+    private String imageDir;
 
 
     public void saveProperty(PropertyDAO property, MultipartFile file, Long userId) throws Exception {
@@ -57,26 +61,24 @@ public class PropertyService {
         UserDAO user = userRep.findById(userId).orElseThrow();
         property.setUser(user);
 
-        // 3D модель — необязательна
         if (modelFile != null && !modelFile.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + modelFile.getOriginalFilename();
-            Path path = Paths.get(modelDir + fileName);
-            Files.createDirectories(path.getParent());
-            Files.copy(modelFile.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-            property.setModelFileName(fileName);
+            String modelFileName = System.currentTimeMillis() + "_" + modelFile.getOriginalFilename();
+            Path modelPath = Paths.get(modelDir + modelFileName);
+            Files.createDirectories(modelPath.getParent());
+            Files.copy(modelFile.getInputStream(), modelPath, StandardCopyOption.REPLACE_EXISTING);
+            property.setModelFileName(modelFileName);
         }
 
-        // Изображения — список
         if (images != null && !images.isEmpty()) {
-            List<String> fileNames = new ArrayList<>();
-            for (MultipartFile image : images) {
-                String imgName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-                Path imgPath = Paths.get(imageDir + imgName);
-                Files.createDirectories(imgPath.getParent());
-                Files.copy(image.getInputStream(), imgPath, StandardCopyOption.REPLACE_EXISTING);
-                fileNames.add(imgName);
+            List<String> imageFileNames = new ArrayList<>();
+            for (MultipartFile img : images) {
+                String imageFileName = System.currentTimeMillis() + "_" + img.getOriginalFilename();
+                Path imagePath = Paths.get(imageDir + imageFileName);
+                Files.createDirectories(imagePath.getParent());
+                Files.copy(img.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
+                imageFileNames.add(imageFileName);
             }
-            property.setImageFileNames(fileNames);
+            property.setImageFileNames(imageFileNames);
         }
 
         propertyRepository.save(property);

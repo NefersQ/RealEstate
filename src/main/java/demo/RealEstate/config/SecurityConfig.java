@@ -28,13 +28,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/login").permitAll()
                         .requestMatchers("/api/v1/properties").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/v1/properties/**").permitAll()
+                        .requestMatchers("/files/**").permitAll()
                         .requestMatchers(
                                 "/index.html", "/",
                                 "/login.html", "/register.html",
                                 "/upload.html", "/view.html",
-                                "/js/**", "/models/**"
-                        ).permitAll()
+                                "/js/**", "/models/**","/css/**",
+                                "/images/**"
+                                ).permitAll()
 
                         .anyRequest().authenticated()
                 )
