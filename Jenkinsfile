@@ -13,21 +13,21 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/NefersQ/RealEstate.git'
+                git branch: 'master', url: 'https://github.com/NefersQ/RealEstate.git'
             }
         }
 
         stage('Build') {
             steps {
-                echo '🔧 Building the project...'
-                sh 'mvn clean package -DskipTests'
+                echo 'Building the project...'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
         stage('Test') {
             steps {
-                echo '🧪 Running tests...'
-                sh 'mvn test'
+                echo 'Running tests...'
+                bat 'mvn test'
             }
             post {
                 always {
